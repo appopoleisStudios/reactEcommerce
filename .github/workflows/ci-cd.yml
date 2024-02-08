@@ -1,9 +1,9 @@
-name: Build and Deploy to GitHub Pages
+name: Deploy to AWS Elastic Beanstalk
 
 on:
   push:
     branches:
-      - main  # Adjust this as necessary for your workflow
+      - main  # Adjust this as necessary
 
 jobs:
   build:
@@ -15,19 +15,28 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '14' # Adjust this as necessary for your project
+        node-version: '20'  # Adjust this as necessary
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: npm install
 
-    - name: Increase memory limit for Node and Build
-      run: |
-        export NODE_OPTIONS=--max_old_space_size=4096
-        npm run build || (cat /home/runner/.npm/_logs/*-debug.log && false)
+    - name: Build
+      run: npm run build
 
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@4.1.4
+    - name: Zip build directory
+      run: zip -r build.zip build/
+
+    # Future backend and MongoDB steps would go here
+    # Placeholder for backend setup
+    # Placeholder for MongoDB setup
+
+    - name: Deploy to AWS Elastic Beanstalk
+      uses: einaregilsson/beanstalk-deploy@v18
       with:
-        branch: gh-pages  # The branch the action should deploy to.
-        folder: build     # The folder the action should deploy.
-        clean: true       # Automatically remove deleted files from the deployment.
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        region: ${{ secrets.AWS_REGION }}
+        application_name: ${{ secrets.APPLICATION_NAME }}
+        environment_name: ${{ secrets.ENVIRONMENT_NAME }}
+        version_label: ${{ github.sha }}
+        deployment_package: build.zip
