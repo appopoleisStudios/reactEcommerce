@@ -3,7 +3,7 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Set this to your default branch
+      - main  # Adjust this as necessary for your workflow
 
 jobs:
   build:
@@ -15,13 +15,15 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '14' # Set this to your project's Node.js version
+        node-version: '14' # Adjust this as necessary for your project
 
     - name: Install Dependencies
       run: npm install
 
-    - name: Build
-      run: npm run build
+    - name: Increase memory limit for Node and Build
+      run: |
+        export NODE_OPTIONS=--max_old_space_size=4096
+        npm run build
 
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@4.1.4
