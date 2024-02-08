@@ -1,53 +1,35 @@
-name: Deploy to AWS Elastic Beanstalk
+name: Deploy to Amazon S3
 
 on:
   push:
     branches:
-      - main  # Adjust this as necessary
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'  # Adjust this as necessary
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20' # Use the Node.js version compatible with your project
 
-    - name: Install dependencies
-      run: npm install --legacy-peer-deps
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
-    - name: Build
-      env:
-        CI: false
-      run: npm run build
+      - name: Build
+        run: npm run build
 
-    - name: Zip build directory
-      run: zip -r build.zip build/
-
-    # Future backend and MongoDB steps would go here
-    # Placeholder for backend setup
-    - name: Prepare deployment package
-      run: |
-        mkdir deployment
-        cp -R build/ deployment/build/
-        cp server.js package.json Procfile ./deployment/
-        cd deployment
-        zip -r ../deployment.zip ./*
-      
-    # Placeholder for MongoDB setup
-
-    - name: Deploy to AWS Elastic Beanstalk
-      uses: einaregilsson/beanstalk-deploy@v18
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        region: ${{ secrets.AWS_REGION }}
-        application_name: ${{ secrets.APPLICATION_NAME }}
-        environment_name: ${{ secrets.ENVIRONMENT_NAME }}
-        version_label: ${{ github.sha }}
-        deployment_package: deployment.zip
-
+      - name: Deploy to S3
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1' # Change to your bucket's region
+          SOURCE_DIR: 'build'
