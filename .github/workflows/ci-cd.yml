@@ -30,6 +30,14 @@ jobs:
 
     # Future backend and MongoDB steps would go here
     # Placeholder for backend setup
+    - name: Prepare deployment package
+      run: |
+        mkdir deployment
+        cp -R build/ deployment/build/
+        cp server.js package.json Procfile ./deployment/
+        cd deployment
+        zip -r ../deployment.zip ./*
+      
     # Placeholder for MongoDB setup
 
     - name: Deploy to AWS Elastic Beanstalk
@@ -41,4 +49,5 @@ jobs:
         application_name: ${{ secrets.APPLICATION_NAME }}
         environment_name: ${{ secrets.ENVIRONMENT_NAME }}
         version_label: ${{ github.sha }}
-        deployment_package: build.zip
+        deployment_package: deployment.zip
+
