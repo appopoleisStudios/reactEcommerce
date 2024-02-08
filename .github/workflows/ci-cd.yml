@@ -23,7 +23,7 @@ jobs:
     - name: Increase memory limit for Node and Build
       run: |
         export NODE_OPTIONS=--max_old_space_size=4096
-        npm run build
+        npm run build || (cat /home/runner/.npm/_logs/*-debug.log && false)
 
     - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@4.1.4
